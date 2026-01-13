@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "119243529118",
+    "project_id": "quocvietsuperapp",
+    "storage_bucket": "quocvietsuperapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119243529118:android:e63a99efbdbd432853948f",
+        "android_client_info": {
+          "package_name": "com.qvc.quocvietsuperapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0s7FO4UeaWCxpZLB6UBIsfRfMe8UTTjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
