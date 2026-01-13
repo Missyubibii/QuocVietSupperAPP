@@ -5,16 +5,23 @@ import {
   ChevronRight, X, Plus, Minus, Camera,
   MapPin, Clock, File, Download, Upload,
   Eye, EyeOff, LogOut, Lock, Unlock,
+  // Chapter 9 - Additional icons from App.js
+  Hexagon, Zap, BarChart3, PieChart, Box,
+  ScanLine, UserPlus, FileBarChart, CalendarDays,
+  CheckCircle2, Save, Phone, MessageSquare,
+  Activity, FileText, TrendingUp,
   type LucideIcon,
 } from 'lucide-react-native';
 
 /**
  * DynamicIcon Component - Safe icon mapping for SDUI
  * Uses explicit whitelist to prevent crashes from invalid Lucide exports
+ * Updated for Chapter 9 with App.js icons
  */
 
 // Safe icon registry - only verified components
 const ICON_MAP: Record<string, LucideIcon> = {
+  // Chapter 1 - Basic icons
   home: Home,
   user: User,
   settings: Settings,
@@ -39,6 +46,24 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'log-out': LogOut,
   lock: Lock,
   unlock: Unlock,
+  
+  // Chapter 9 - Home screen icons
+  hexagon: Hexagon,
+  zap: Zap,
+  'bar-chart-3': BarChart3,
+  'pie-chart': PieChart,
+  box: Box,
+  'scan-line': ScanLine,
+  'user-plus': UserPlus,
+  'file-bar-chart': FileBarChart,
+  'calendar-days': CalendarDays,
+  'check-circle-2': CheckCircle2,
+  save: Save,
+  phone: Phone,
+  'message-square': MessageSquare,
+  activity: Activity,
+  'file-text': FileText,
+  'trending-up': TrendingUp,
 };
 
 interface DynamicIconProps {

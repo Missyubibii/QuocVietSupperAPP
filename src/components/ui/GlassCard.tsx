@@ -1,32 +1,60 @@
 import React from 'react';
-import { View, Pressable, type ViewProps, type PressableProps } from 'react-native';
+import { View, Pressable, Platform, type ViewStyle, type ViewProps, type PressableProps } from 'react-native';
 
 /**
- * GlassCard Component - Glassmorphism design
- * Features: Semi-transparent background, backdrop blur, subtle border
+ * GlassCard Component - Glassmorphism design (Production Ready)
+ * Features:
+ * - iOS: Backdrop blur (real glassmorphism)
+ * - Android: Higher opacity + elevation shadow
+ * - Pressable support with active animation
+ * - Cross-platform shadow handling
  */
 
-interface GlassCardProps extends ViewProps {
+interface GlassCardProps extends Omit<ViewProps, 'style'> {
   children: React.ReactNode;
   className?: string;
+  style?: ViewStyle;
   onPress?: () => void;
-  pressable?: boolean;
+  disabled?: boolean;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   className = '',
+  style,
   onPress,
-  pressable = false,
+  disabled = false,
   ...props
 }) => {
-  const glassStyles = `bg-white/80 backdrop-blur-xl border border-white/60 rounded-2xl shadow-lg ${className}`;
+  // Cross-platform glass effect
+  const glassClassName = Platform.select({
+    ios: `bg-white/80 backdrop-blur-xl border border-white/60 rounded-2xl ${className}`,
+    android: `bg-white/95 border border-white/50 rounded-2xl ${className}`,
+    default: `bg-white/80 border border-white/60 rounded-2xl ${className}`,
+  });
 
-  if (pressable || onPress) {
+  // Android shadow style (elevation doesn't work with className)
+  const androidShadow: ViewStyle =
+    Platform.OS === 'android'
+      ? {
+          elevation: 3,
+          shadowColor: '#000',
+        }
+      : {};
+
+  const combinedStyle: ViewStyle = {
+    ...androidShadow,
+    ...style,
+  };
+
+  // Return Pressable if onPress provided
+  if (onPress) {
     return (
       <Pressable
         onPress={onPress}
-        className={`${glassStyles} active:opacity-80`}
+        disabled={disabled}
+        className={`${glassClassName} ${disabled ? 'opacity-50' : 'active:opacity-90 active:scale-[0.98]'}`}
+        style={combinedStyle}
         {...(props as PressableProps)}
       >
         {children}
@@ -34,8 +62,9 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     );
   }
 
+  // Return View otherwise
   return (
-    <View className={glassStyles} {...props}>
+    <View className={glassClassName} style={combinedStyle} {...props}>
       {children}
     </View>
   );

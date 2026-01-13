@@ -2,12 +2,18 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import type { WidgetBlock, WidgetType } from './types';
 
+// Chapter 9 - Production home widgets
+import { HomeHeaderWidget } from './widget-components/HomeHeaderWidget';
+import { QuickActionWidget } from './widget-components/QuickActionWidget';
+import { StatsWidget } from './widget-components/StatsWidget';
+import { LeadListWidget } from './widget-components/LeadListWidget';
+
 /**
  * SDUI Layout Engine - The heart of Server-Driven UI
  * Maps JSON widget blocks to React components
  */
 
-// Placeholder widgets for demonstration
+// Placeholder widgets for demonstration (Chapter 1)
 const HeaderBannerWidget: React.FC<WidgetBlock> = ({ title, data }) => (
   <View className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-2xl mx-4 my-2">
     <Text className="text-white text-2xl font-bold">{title || data?.title}</Text>
@@ -46,13 +52,18 @@ const ErrorWidget: React.FC<{ type: string }> = ({ type }) => (
 );
 
 // Widget Registry - Maps widget types to components
-const WIDGET_REGISTRY: Record<WidgetType, React.FC<WidgetBlock>> = {
+const WIDGET_REGISTRY: Record<string, React.FC<any>> = {
+  // Chapter 1 - Placeholders
   HEADER_BANNER: HeaderBannerWidget,
   GRID_MENU: GridMenuWidget,
   INFO_CARD: InfoCardWidget,
-  // Placeholders for future widgets
   TASK_LIST: InfoCardWidget, // Will be replaced in Chapter 4
-  QUICK_ACTIONS: GridMenuWidget, // Will be replaced later
+  
+  // Chapter 9 - Production home widgets
+  HOME_HEADER: HomeHeaderWidget,
+  QUICK_ACTIONS: QuickActionWidget,
+  STATS_GRID: StatsWidget,
+  LEAD_LIST: LeadListWidget,
 };
 
 // Main Layout Engine Component

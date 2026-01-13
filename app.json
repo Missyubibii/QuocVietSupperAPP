@@ -15,7 +15,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.qvc.quocvietsuperapp",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Ứng dụng cần truy cập camera để chụp ảnh chấm công xác nhận bạn đang có mặt tại văn phòng",
+        "NSLocationWhenInUseUsageDescription": "Ứng dụng cần truy cập vị trí để xác nhận bạn đang ở trong phạm vi văn phòng khi chấm công",
+        "NSFaceIDUsageDescription": "Sử dụng Face ID để đăng nhập nhanh và bảo mật tài khoản"
+      }
     },
     "android": {
       "package": "com.qvc.quocvietsuperapp",
@@ -23,6 +28,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
