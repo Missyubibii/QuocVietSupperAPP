@@ -24,11 +24,10 @@ interface CameraWidgetProps {
 export function CameraWidget({ onPhotoTaken }: CameraWidgetProps) {
     const [permission, requestPermission] = useCameraPermissions();
     const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+    const [isCameraReady, setIsCameraReady] = useState(false); // ✅ ADDED
     const cameraRef = useRef<any>(null);
 
-    const isSimulator = !Device.isDevice
-
-        ;
+    const isSimulator = !Device.isDevice;
 
     const handleTakePhoto = async () => {
         // Simulator mode: Mock photo
@@ -56,7 +55,12 @@ export function CameraWidget({ onPhotoTaken }: CameraWidgetProps) {
         }
 
         // Real device: Capture photo
-        if (!cameraRef.current) return;
+        if (!cameraRef.current || !isCameraReady) { // ✅ CHECK isCameraReady
+            if (__DEV__) {
+                console.warn('[CameraWidget] Camera not ready yet');
+            }
+            return;
+        }
 
         try {
             setIsTakingPhoto(true);
@@ -144,20 +148,23 @@ export function CameraWidget({ onPhotoTaken }: CameraWidgetProps) {
                 ref={cameraRef}
                 style={{ flex: 1 }}
                 facing="front"
+                onCameraReady={() => setIsCameraReady(true)} // ✅ ADDED
             >
                 {/* Camera overlay */}
                 <View className="flex-1 justify-end items-center pb-8">
                     {/* Capture button */}
                     <TouchableOpacity
                         onPress={handleTakePhoto}
-                        disabled={isTakingPhoto}
+                        disabled={isTakingPhoto || !isCameraReady} // ✅ DISABLED until ready
                         className="w-20 h-20 rounded-full border-4 border-white/80 items-center justify-center active:opacity-70"
                         style={{
-                            backgroundColor: isTakingPhoto ? '#94a3b8' : '#FFFFFF',
+                            backgroundColor: (isTakingPhoto || !isCameraReady) ? '#94a3b8' : '#FFFFFF',
                         }}
                     >
                         {isTakingPhoto ? (
                             <Text className="text-xs text-white">...</Text>
+                        ) : !isCameraReady ? (
+                            <Text className="text-xs text-white">⏳</Text> // ✅ SHOW loading
                         ) : (
                             <View className="w-16 h-16 bg-blue-600 rounded-full" />
                         )}
@@ -165,6 +172,9 @@ export function CameraWidget({ onPhotoTaken }: CameraWidgetProps) {
 
                     {isTakingPhoto && (
                         <Text className="text-white text-sm mt-2">Processing...</Text>
+                    )}
+                    {!isCameraReady && !isTakingPhoto && (
+                        <Text className="text-white text-sm mt-2">Đang khởi động camera...</Text>
                     )}
                 </View>
             </CameraView>

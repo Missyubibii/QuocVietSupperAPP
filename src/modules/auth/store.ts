@@ -23,7 +23,8 @@ interface AuthStore {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hydrate: () => Promise<void>;
-  setBiometric: (enabled: boolean) => void;
+  enableBiometric: (enabled: boolean) => Promise<void>;
+  loadBiometricPreference: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -105,10 +106,25 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   /**
-   * Set biometric preference
+   * Enable/disable biometric and persist to storage
    */
-  setBiometric: (enabled) => {
+  enableBiometric: async (enabled) => {
     set({ isBiometricEnabled: enabled });
-    // TODO: Save preference to AsyncStorage in future
+    await saveGeneral("biometric_enabled", enabled ? "true" : "false");
+  },
+
+  /**
+   * Load biometric preference from storage
+   * Called during hydration
+   */
+  loadBiometricPreference: async () => {
+    try {
+      const pref = await getGeneral("biometric_enabled");
+      if (pref === "true") {
+        set({ isBiometricEnabled: true });
+      }
+    } catch (error) {
+      console.error("[Auth] Failed to load biometric preference:", error);
+    }
   },
 }));

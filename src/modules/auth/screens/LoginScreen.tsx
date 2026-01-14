@@ -20,13 +20,17 @@ export default function LoginScreen() {
     defaultValues: { username: '', password: '' },
   });
 
-  // Check biometric hardware on mount (Hardware Guard)
+  // Check biometric hardware AND user preference on mount
   useEffect(() => {
     (async () => {
       try {
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
         setBiometricAvailable(hasHardware && isEnrolled);
+
+        // Load user's biometric preference from storage
+        const { loadBiometricPreference } = useAuthStore.getState();
+        await loadBiometricPreference();
       } catch (error) {
         console.log('[Biometric] Hardware check failed:', error);
         setBiometricAvailable(false);
@@ -38,7 +42,36 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(data.username, data.password);
-      router.replace('/'); // Redirect to home after successful login
+
+      // BIOMETRIC OPT-IN UX FLOW (System Design Doc Chapter 2.3)
+      // After first successful login, ask user if they want to enable biometric
+      if (biometricAvailable) {
+        const { enableBiometric } = useAuthStore.getState();
+
+        Alert.alert(
+          'Đăng nhập nhanh',
+          'Bạn có muốn bật đăng nhập bằng vân tay/FaceID cho lần sau không?',
+          [
+            {
+              text: 'Không',
+              style: 'cancel',
+              onPress: async () => {
+                await enableBiometric(false);
+                router.replace('/');
+              },
+            },
+            {
+              text: 'Có',
+              onPress: async () => {
+                await enableBiometric(true);
+                router.replace('/');
+              },
+            },
+          ]
+        );
+      } else {
+        router.replace('/'); // No biometric available, just navigate
+      }
     } catch (error) {
       const errorMessage = (error as Error).message;
       if (errorMessage.includes('401')) {
@@ -58,7 +91,7 @@ export default function LoginScreen() {
         promptMessage: 'Đăng nhập bằng sinh trắc học',
         fallbackLabel: 'Use password',
       });
-      
+
       if (result.success) {
         setLoading(true);
         try {
@@ -171,8 +204,10 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Biometric Button (Hardware Guard - Only shows when hardware available) */}
-          {biometricAvailable && (
+          {/* Biometric Button - Only shows when:
+              1. Hardware is available (hasHardware && isEnrolled)
+              2. User has opted in (isBiometricEnabled from store) */}
+          {biometricAvailable && useAuthStore.getState().isBiometricEnabled && (
             <TouchableOpacity
               onPress={handleBiometricLogin}
               disabled={loading}
@@ -193,7 +228,7 @@ export default function LoginScreen() {
               className={`mt-4 py-3 border-2 border-orange-500 bg-orange-50 rounded-xl ${loading ? 'opacity-50' : ''}`}
             >
               <View className="flex-row items-center justify-center">
-                <DynamicIcon name="unlock" size={20} color="#F97316" />  
+                <DynamicIcon name="unlock" size={20} color="#F97316" />
                 <Text className="text-orange-600 font-semibold ml-2">Mock Biometric (Dev Only)</Text>
               </View>
             </TouchableOpacity>

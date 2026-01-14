@@ -29,6 +29,7 @@
     },
     "android": {
       "package": "com.qvc.quocvietsuperapp",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -36,8 +37,7 @@
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "READ_EXTERNAL_STORAGE"
+        "ACCESS_COARSE_LOCATION"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -47,13 +47,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "254ec1fe-9141-46a8-ae48-986ea1f57c8e"
+        "projectId": "f0276cfc-2f2f-4cf4-bc4d-c62224eb2b7a"
       }
-    }
+    },
+    "owner": "missyubibi"
   }
 }

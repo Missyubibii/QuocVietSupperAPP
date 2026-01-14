@@ -48,20 +48,36 @@ export class AttendanceMockRepository {
    * Mock Check-In
    *
    * Validates:
-   * 1. Geofencing (distance <= 200m)
-   * 2. Image size (if provided)
+   * 1. Time drift (anti-fraud)
+   * 2. Geofencing (distance <= 200m)
+   * 3. Image size (if provided)
    */
   async checkIn(payload: CheckInPayload): Promise<CheckInResponse> {
     // Simulate network delay (1 second)
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Calculate distance from office
+    // 1. TIME FRAUD CHECK (Anti-Cheat)
+    // In mock: use Date.now() as "server time"
+    // In production: server returns server_time, compare with payload.timestamp
+    const serverTime = Date.now();
+    const clientTime = new Date(payload.timestamp).getTime();
+    const timeDriftMs = Math.abs(serverTime - clientTime);
+    const MAX_DRIFT_MS = 5 * 60 * 1000; // 5 minutes
+
+    if (timeDriftMs > MAX_DRIFT_MS) {
+      throw new Error(
+        `TIME_DRIFT:Lệch giờ ${Math.round(timeDriftMs / 1000 / 60)} phút. ` +
+          `Vui lòng chỉnh lại ngày giờ hệ thống.`
+      );
+    }
+
+    // 2. Calculate distance from office
     const distance = this.calculateDistance(
       payload.latitude,
       payload.longitude
     );
 
-    // Image size validation (if photo provided)
+    // 3. Image size validation (if photo provided)
     if (payload.photo_base64) {
       // Rough base64 size estimation: length * 0.75
       const estimatedSize = payload.photo_base64.length * 0.75;
@@ -75,7 +91,7 @@ export class AttendanceMockRepository {
       }
     }
 
-    // Geofencing validation
+    // 4. Geofencing validation
     const isWithinGeofence = distance <= OFFICE_LOCATION.geofence_radius;
 
     if (!isWithinGeofence) {

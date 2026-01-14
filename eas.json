@@ -28,7 +28,7 @@
                 "GRADLE_OPTS": "-Dorg.gradle.daemon=false"
             },
             "ios": {
-                "buildType": "app-store"
+                "distribution": "store"
             },
             "android": {
                 "buildType": "app-bundle"

@@ -19,6 +19,7 @@ export interface User {
 export interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  expires_in: number; // Token expiration time in seconds (e.g., 3600 = 1 hour)
   user_info: User;
 }
 
@@ -34,6 +35,7 @@ export type LoginFormData = z.infer<typeof LoginSchema>;
 export const AuthResponseSchema = z.object({
   access_token: z.string(),
   refresh_token: z.string(),
+  expires_in: z.number().positive(), // Token expiration in seconds
   user_info: z.object({
     id: z.number(), // IMPORTANT: number type, not string
     name: z.string(),

@@ -76,7 +76,8 @@ export function useSafeLocation(): LocationResult {
           return;
         }
 
-        // Set timeout to prevent infinite loading (5 seconds)
+        // Set timeout to prevent infinite loading (10 seconds)
+        // Android cold start can take 10-15s, 10s is reasonable compromise
         timeoutId = setTimeout(() => {
           if (!cancelled) {
             setLocation({
@@ -89,7 +90,7 @@ export function useSafeLocation(): LocationResult {
               loading: false,
             });
           }
-        }, 5000);
+        }, 10000); // ✅ INCREASED from 5000ms to 10000ms
 
         // Get real location
         const position = await Location.getCurrentPositionAsync({

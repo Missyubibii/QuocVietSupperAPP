@@ -1,6 +1,6 @@
 import "../global.css"; // CRITICAL: Must be first import for NativeWind v4
 import { useEffect } from 'react';
-import { useRouter, useSegments, Slot, SplashScreen } from 'expo-router';
+import { useRouter, useSegments, Stack, SplashScreen } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../config/query-client';
@@ -51,7 +51,26 @@ export default function RootLayout() {
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-          <Slot />
+          <Stack>
+            {/* Main app with tabs */}
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+            {/* Auth screens */}
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+
+            {/* Modal: Create Task (slides from bottom) */}
+            <Stack.Screen
+              name="task/create"
+              options={{
+                presentation: 'modal',
+                headerShown: true,
+                headerTitle: 'Tạo công việc mới',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }}
+            />
+          </Stack>
         </SafeAreaProvider>
       </QueryClientProvider>
     </GlobalErrorBoundary>

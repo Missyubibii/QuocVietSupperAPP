@@ -24,6 +24,7 @@ export class AuthMockRepository implements IAuthRepository {
     return {
       access_token: "mock_access_token_" + Date.now(),
       refresh_token: "mock_refresh_token_" + Date.now(),
+      expires_in: 3600, // 1 hour in seconds
       user_info: {
         id: 1001, // IMPORTANT: number type, not string
         name: username,

@@ -65,6 +65,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="tasks"
+        options={{
+          title: 'Công việc',
+          tabBarIcon: ({ color, size }) => (
+            <DynamicIcon name="check-square" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
