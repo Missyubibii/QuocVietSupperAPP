@@ -23,12 +23,15 @@
         "production": {
             "node": "20.17.0",
             "autoIncrement": true,
-            "android": {
-                "buildType": "app-bundle"
-            },
             "env": {
                 "EXPO_PUBLIC_USE_MOCK": "false",
                 "GRADLE_OPTS": "-Dorg.gradle.daemon=false"
+            },
+            "ios": {
+                "buildType": "app-store"
+            },
+            "android": {
+                "buildType": "app-bundle"
             }
         }
     },

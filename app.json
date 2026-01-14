@@ -15,11 +15,16 @@
     },
     "ios": {
       "bundleIdentifier": "com.qvc.quocvietsuperapp",
+      "buildNumber": "1",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Ứng dụng cần truy cập camera để chụp ảnh chấm công xác nhận bạn đang có mặt tại văn phòng",
-        "NSLocationWhenInUseUsageDescription": "Ứng dụng cần truy cập vị trí để xác nhận bạn đang ở trong phạm vi văn phòng khi chấm công",
-        "NSFaceIDUsageDescription": "Sử dụng Face ID để đăng nhập nhanh và bảo mật tài khoản"
+        "NSCameraUsageDescription": "Ứng dụng cần truy cập Camera để nhân viên chụp ảnh Check-in chấm công và chụp hóa đơn thanh toán.",
+        "NSFaceIDUsageDescription": "Ứng dụng cần FaceID để đăng nhập nhanh và bảo mật.",
+        "NSLocationWhenInUseUsageDescription": "Ứng dụng cần vị trí của bạn để xác thực địa điểm chấm công hợp lệ.",
+        "NSPhotoLibraryUsageDescription": "Ứng dụng cần truy cập thư viện ảnh để đính kèm tài liệu vào công việc.",
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {

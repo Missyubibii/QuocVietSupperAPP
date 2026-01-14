@@ -4,9 +4,9 @@
  *
  * Action Object Format:
  * {
- *   type: 'NAVIGATE' | 'API' | 'OPEN_MODAL',
- *   target: string,
- *   payload?: Record<string, any>
+ * type: 'NAVIGATE' | 'API' | 'OPEN_MODAL' | 'COMING_SOON',
+ * target: string,
+ * payload?: Record<string, any>
  * }
  */
 
@@ -20,10 +20,17 @@ export const homeScreenMock = [
       userAvatar:
         "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop",
       notificationCount: 3,
-      // ✅ Pure JSON action (not a function)
+
+      // LOGIC MỚI: Settings Action
+      settingsAction: {
+        type: "NAVIGATE",
+        target: "/(tabs)/settings", // Chuyển hướng sang trang Settings chuẩn MISA
+        payload: {},
+      },
+
       notificationAction: {
         type: "NAVIGATE",
-        target: "/debug",
+        target: "/notifications",
         payload: {},
       },
     },
@@ -40,7 +47,7 @@ export const homeScreenMock = [
           label: "Quét QR",
           icon: "scan-line",
           action: {
-            type: "OPEN_MODAL",
+            type: "COMING_SOON",
             target: "QR_SCANNER",
             payload: {},
           },
@@ -50,7 +57,7 @@ export const homeScreenMock = [
           label: "Thêm Khách",
           icon: "user-plus",
           action: {
-            type: "OPEN_MODAL",
+            type: "COMING_SOON", // Đã sửa lỗi chính tả ở đây
             target: "ADD_CUSTOMER",
             payload: {},
           },
@@ -60,7 +67,7 @@ export const homeScreenMock = [
           label: "Tạo Báo cáo",
           icon: "file-text",
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/reports",
             payload: {},
           },
@@ -70,7 +77,7 @@ export const homeScreenMock = [
           label: "Lịch hẹn",
           icon: "calendar-days",
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/calendar",
             payload: {},
           },
@@ -128,9 +135,9 @@ export const homeScreenMock = [
           avatar:
             "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
           tagColor: "bg-blue-100 text-blue-700",
-          // ✅ Each lead has pure JSON action
+          // ✅ Each lead triggers COMING_SOON popup
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/lead/1",
             payload: { leadId: 1 },
           },
@@ -145,7 +152,7 @@ export const homeScreenMock = [
             "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
           tagColor: "bg-emerald-100 text-emerald-700",
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/lead/2",
             payload: { leadId: 2 },
           },
@@ -160,7 +167,7 @@ export const homeScreenMock = [
             "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop",
           tagColor: "bg-purple-100 text-purple-700",
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/lead/3",
             payload: { leadId: 3 },
           },
@@ -175,7 +182,7 @@ export const homeScreenMock = [
             "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop",
           tagColor: "bg-orange-100 text-orange-700",
           action: {
-            type: "NAVIGATE",
+            type: "COMING_SOON",
             target: "/lead/4",
             payload: { leadId: 4 },
           },

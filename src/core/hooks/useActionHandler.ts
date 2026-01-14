@@ -1,81 +1,60 @@
-import { useRouter } from "expo-router";
-import { Alert } from "react-native";
-
 /**
- * Action Handler Hook
- * Processes SDUI Action Objects (Pure JSON, no functions)
- *
- * Supported action types:
- * - NAVIGATE: Navigate to a route
- * - API: Make an API call (future)
- * - OPEN_MODAL: Open a modal (future)
+ * src/core/hooks/useActionHandler.ts
  */
+import { useCallback } from "react";
+import { useRouter } from "expo-router";
+import { Alert, Linking } from "react-native";
+import { Action } from "../sdui/types";
 
-export interface AppAction {
-  type: "NAVIGATE" | "API" | "OPEN_MODAL";
-  target: string;
-  payload?: Record<string, any>;
-}
-
-export function useActionHandler() {
+export const useActionHandler = () => {
   const router = useRouter();
 
-  const handleAction = (action?: AppAction) => {
-    if (!action) {
-      if (__DEV__) {
-        console.warn("⚠️ handleAction called with undefined action");
+  const handleAction = useCallback(
+    (action?: Action) => {
+      if (!action) return;
+
+      // 1. Xử lý tính năng đang phát triển
+      if (action.type === "COMING_SOON") {
+        Alert.alert(
+          "Tính năng mới",
+          "Chức năng này đang được phát triển và sẽ sớm ra mắt!",
+          [{ text: "Đã hiểu", style: "default" }]
+        );
+        return;
       }
-      return;
-    }
 
-    switch (action.type) {
-      case "NAVIGATE":
-        // Navigate to target route
-        try {
-          router.push(action.target as any);
+      // 2. Xử lý điều hướng
+      if (action.type === "NAVIGATE" || action.type === "LINK") {
+        // Mock data dùng 'target', Legacy code dùng 'url'
+        // @ts-ignore
+        const destination = action.target || action.url;
 
-          if (__DEV__) {
-            console.log(`✅ Navigate to: ${action.target}`, action.payload);
+        if (destination) {
+          if (destination.startsWith("http")) {
+            Linking.openURL(destination);
+          } else {
+            // @ts-ignore
+            router.push(destination);
           }
-        } catch (error) {
-          if (__DEV__) {
-            console.error("❌ Navigation error:", error);
-          }
-          Alert.alert(
-            "Navigation Error",
-            "Could not navigate to the requested screen"
-          );
         }
-        break;
+        return;
+      }
 
-      case "API":
-        // Future: Make API call
-        if (__DEV__) {
-          console.log(`🌐 API call to: ${action.target}`, action.payload);
-          Alert.alert(
-            "API Action",
-            `Would call: ${action.target}\n\n(Not yet implemented)`
-          );
-        }
-        break;
-
-      case "OPEN_MODAL":
-        // Future: Open modal
-        if (__DEV__) {
-          console.log(`📱 Open modal: ${action.target}`, action.payload);
-          Alert.alert(
-            "Modal Action",
-            `Would open: ${action.target}\n\n(Not yet implemented)`
-          );
-        }
-        break;
-
-      default:
-        if (__DEV__) {
-          console.warn(`⚠️ Unknown action type: ${(action as any).type}`);
-        }
-    }
-  };
+      // 3. Xử lý Modal (Tạm thời alert để debug nếu chưa làm component Modal)
+      if (action.type === "OPEN_MODAL") {
+        console.log("Open Modal:", action);
+        // Logic mở modal sẽ implement sau
+        Alert.alert(
+          "Modal",
+          `Mở modal: ${
+            // @ts-ignore
+            action.target
+          }`
+        );
+      }
+    },
+    [router]
+  );
 
   return { handleAction };
-}
+};
