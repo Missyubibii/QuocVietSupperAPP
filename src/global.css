@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .misa-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4;
+  }
+  
+  .misa-btn-primary {
+    @apply bg-primary rounded-lg py-3 px-4 flex-row justify-center items-center shadow-md shadow-red-200;
+  }
+
+  .misa-btn-text {
+    @apply text-white font-bold text-base ml-2;
+  }
+}

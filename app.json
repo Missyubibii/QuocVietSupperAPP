@@ -16,7 +16,7 @@
     "ios": {
       "bundleIdentifier": "com.qvc.quocvietsuperapp",
       "buildNumber": "1",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "Ứng dụng cần truy cập Camera để nhân viên chụp ảnh Check-in chấm công và chụp hóa đơn thanh toán.",
         "NSFaceIDUsageDescription": "Ứng dụng cần FaceID để đăng nhập nhanh và bảo mật.",
@@ -24,7 +24,8 @@
         "NSPhotoLibraryUsageDescription": "Ứng dụng cần truy cập thư viện ảnh để đính kèm tài liệu vào công việc.",
         "UIBackgroundModes": [
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

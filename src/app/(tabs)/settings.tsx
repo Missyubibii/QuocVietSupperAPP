@@ -1,20 +1,13 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
   ChevronRight,
-  User,
   LogOut,
-  Settings as SettingsIcon,
-  Bell,
-  ShieldCheck,
-  HelpCircle,
-  FileText,
-  Moon
+  Trash2,
 } from 'lucide-react-native';
-import { useAuthStore } from '../../modules/auth/store'; // Giả định đường dẫn store
-import { useActionHandler } from '../../core/hooks/useActionHandler';
+import { useAuthStore } from '../../modules/auth/store';
 
 // Component hiển thị từng dòng menu (Row Item)
 const SettingItem = ({ icon: Icon, label, onPress, isDestructive = false, showArrow = true, value = null }: any) => (
@@ -53,7 +46,6 @@ export default function SettingsScreen() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-  const { handleAction } = useActionHandler();
 
   const handleLogout = () => {
     Alert.alert(
@@ -74,8 +66,31 @@ export default function SettingsScreen() {
   };
 
   // Hàm giả lập tính năng chưa có
-  const handleComingSoon = () => {
-    handleAction({ type: 'COMING_SOON', payload: {} });
+  // const handleComingSoon = () => {
+  //   handleAction({ type: 'COMING_SOON', payload: {} });
+  // };
+
+  // Apple Guideline 5.1.1(v): Account Deletion
+  const handleAccountDeletion = () => {
+    Alert.alert(
+      "Xóa tài khoản",
+      "Yêu cầu xóa tài khoản sẽ được xử lý trong vòng 30 ngày. Mọi dữ liệu của bạn sẽ bị xóa vĩnh viễn. Liên hệ quản trị viên để hủy yêu cầu.\n\nBạn có chắc chắn muốn tiếp tục?",
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa tài khoản",
+          style: "destructive",
+          onPress: () => {
+            // TODO: Call API to request account deletion
+            // Show confirmation feedback (Apple HIG requirement)
+            Alert.alert(
+              "Thành công",
+              "Yêu cầu xóa tài khoản của bạn đã được ghi nhận và sẽ xử lý trong 30 ngày. Vui lòng kiểm tra email để biết thêm chi tiết."
+            );
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -91,9 +106,10 @@ export default function SettingsScreen() {
             <Text className="text-lg font-bold text-slate-800">{user?.name || 'Nguyễn Quốc Việt'}</Text>
             <Text className="text-sm text-slate-500">{user?.position || 'Administrator'}</Text>
 
-            <TouchableOpacity onPress={handleComingSoon}>
+            {/* Commented out per Apple Guideline 2.1 - No incomplete features */}
+            {/* <TouchableOpacity onPress={handleComingSoon}>
               <Text className="text-blue-600 text-sm mt-1 font-medium">Chỉnh sửa hồ sơ</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </SafeAreaView>
@@ -102,7 +118,8 @@ export default function SettingsScreen() {
         <View className="h-4" />
 
         {/* SECTION 1: TÀI KHOẢN & AN NINH */}
-        <SettingSection title="Tài khoản">
+        {/* Commented out incomplete features per Apple Guideline 2.1 */}
+        {/* <SettingSection title="Tài khoản">
           <SettingItem icon={User} label="Thông tin cá nhân" onPress={handleComingSoon} />
           <SettingItem icon={ShieldCheck} label="Đổi mật khẩu & Bảo mật" onPress={handleComingSoon} />
           <SettingItem
@@ -112,14 +129,15 @@ export default function SettingsScreen() {
             onPress={() => { }} // Switch toggle
             showArrow={false}
           />
-        </SettingSection>
+        </SettingSection> */}
 
         {/* SECTION 2: ỨNG DỤNG */}
-        <SettingSection title="Ứng dụng">
+        {/* Commented out incomplete features per Apple Guideline 2.1 */}
+        {/* <SettingSection title="Ứng dụng">
           <SettingItem icon={Moon} label="Giao diện (Dark Mode)" onPress={handleComingSoon} />
           <SettingItem icon={FileText} label="Điều khoản sử dụng" onPress={handleComingSoon} />
           <SettingItem icon={HelpCircle} label="Trợ giúp & Hỗ trợ" onPress={handleComingSoon} />
-        </SettingSection>
+        </SettingSection> */}
 
         {/* SECTION 3: DANGER ZONE */}
         <SettingSection>
@@ -127,6 +145,14 @@ export default function SettingsScreen() {
             icon={LogOut}
             label="Đăng xuất"
             onPress={handleLogout}
+            isDestructive={true}
+            showArrow={false}
+          />
+          {/* Apple Guideline 5.1.1(v): Account Deletion Required */}
+          <SettingItem
+            icon={Trash2}
+            label="Yêu cầu xóa tài khoản"
+            onPress={handleAccountDeletion}
             isDestructive={true}
             showArrow={false}
           />
