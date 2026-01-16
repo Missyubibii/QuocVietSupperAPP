@@ -11,6 +11,7 @@ import {
     MapPin, Camera, CheckCircle2, XCircle, RefreshCw, ArrowLeft,
     Navigation, ShieldCheck
 } from 'lucide-react-native';
+import { useNotificationStore } from '../../notification/store';
 
 // --- CẤU HÌNH TỌA ĐỘ ---
 const OFFICE_LOCATION = {
@@ -26,7 +27,7 @@ export default function CheckInScreen() {
     const router = useRouter();
     const cameraRef = useRef<any>(null);
     const isDevice = Device.isDevice;
-
+    const { addNotification } = useNotificationStore();
     const [step, setStep] = useState<Step>('LOCATION_VERIFY');
     const [permission, requestPermission] = useCameraPermissions();
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -81,7 +82,7 @@ export default function CheckInScreen() {
         }
     };
 
-    // --- LOGIC: CAMERA ---
+    // --- LOGIC: CAMERA & NOTIFICATION ---
     const handleFaceCapture = async () => {
         if (isDevice && cameraRef.current && !isCapturing) {
             try {
@@ -93,6 +94,14 @@ export default function CheckInScreen() {
                     { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
                 );
                 setCapturedImage(manipulated.uri);
+
+                const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                addNotification(
+                    'Chấm công thành công',
+                    `Bạn đã check-in vào lúc ${time} tại văn phòng.`,
+                    'SUCCESS'
+                );
+
                 setStep('SUCCESS');
             } catch (error) {
                 Alert.alert("Lỗi", "Không chụp được ảnh.");
@@ -101,7 +110,11 @@ export default function CheckInScreen() {
             }
         } else if (!isDevice) {
             // Mock Simulator
-            setTimeout(() => { setCapturedImage("https://via.placeholder.com/300"); setStep('SUCCESS'); }, 1000);
+            setTimeout(() => {
+                setCapturedImage("https://via.placeholder.com/300");
+                addNotification('Chấm công Mock', 'Check-in giả lập thành công', 'WARNING');
+                setStep('SUCCESS');
+            }, 1000);
         }
     };
 

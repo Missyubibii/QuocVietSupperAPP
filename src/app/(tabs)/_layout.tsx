@@ -1,85 +1,56 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { DynamicIcon } from '../../components/ui/DynamicIcon';
+import { Platform, View } from 'react-native';
+import { Home, CheckSquare, Settings } from 'lucide-react-native';
+// 1. Import hook lấy thông số an toàn của màn hình
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-/**
- * Tab Navigator Layout - Floating Island Style
- * Features:
- * - iOS: BlurView glassmorphism background
- * - Android: White background
- * - Floating bar with gap from bottom (matches App.js design)
- */
+export default function TabLayout() {
+  // 2. Lấy thông số Insets (đo khoảng cách tai thỏ, vạch home...)
+  const insets = useSafeAreaInsets();
 
-export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: 'oklch(0.637 0.237 25.331)', // Enterprise red
-        tabBarInactiveTintColor: '#94A3B8', // Gray
         tabBarStyle: {
-          position: 'absolute',
-          bottom: 25, // Float above bottom (App.js spec)
-          left: 20,
-          right: 20,
-          height: 70,
-          borderRadius: 30,
-          borderTopWidth: 0, // Remove default border
-          elevation: 0, // Custom shadow handling
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : '#FFFFFF',
-          paddingBottom: 10,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB',
+          // 3. CHIỀU CAO ĐỘNG: 60px chuẩn + khoảng cách vạch Home (insets.bottom)
+          height: 60 + (insets.bottom > 0 ? insets.bottom : 10),
+          // 4. PADDING ĐỘNG: Đẩy nội dung lên trên vạch Home
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           paddingTop: 10,
-          // Shadow for iOS
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.1,
-          shadowRadius: 20,
+          elevation: 0,
         },
-        tabBarBackground: () =>
-          Platform.OS === 'ios' ? (
-            <BlurView
-              intensity={80}
-              tint="light"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderRadius: 30,
-                overflow: 'hidden',
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-              }}
-            />
-          ) : null,
+        tabBarActiveTintColor: '#E11D48',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <DynamicIcon name="home" size={size} color={color} />
-          ),
+          title: 'Trang chủ',
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="tasks"
         options={{
           title: 'Công việc',
-          tabBarIcon: ({ color, size }) => (
-            <DynamicIcon name="check-square" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <CheckSquare size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <DynamicIcon name="settings" size={size} color={color} />
-          ),
+          title: 'Cài đặt',
+          tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
         }}
       />
     </Tabs>

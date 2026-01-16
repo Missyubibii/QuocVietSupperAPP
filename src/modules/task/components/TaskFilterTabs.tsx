@@ -1,46 +1,46 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { TaskFilter } from '../task.types';
-import { DynamicIcon } from '../../../components/ui/DynamicIcon';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { FilterType } from '../store'; // Import type từ store
 
-const TABS = [
-    { key: 'ALL' as TaskFilter, label: 'Tất cả', icon: 'list' },
-    { key: 'MY_TASKS' as TaskFilter, label: 'Của tôi', icon: 'user' },
-    { key: 'IMPORTANT' as TaskFilter, label: 'Quan trọng', icon: 'alert-circle' },
-];
-
-interface TaskFilterTabsProps {
-    current: TaskFilter;
-    onChange: (filter: TaskFilter) => void;
+interface Props {
+    current: FilterType;
+    onChange: (status: FilterType) => void;
 }
 
-export const TaskFilterTabs: React.FC<TaskFilterTabsProps> = ({ current, onChange }) => {
-    return (
-        <View className="bg-white border-b border-slate-200 px-2 py-2">
-            <View className="flex-row">
-                {TABS.map((tab) => {
-                    const isActive = current === tab.key;
+export const TaskFilterTabs = ({ current, onChange }: Props) => {
+    // Cấu hình đúng 3 nút theo yêu cầu
+    const tabs: { id: FilterType; label: string }[] = [
+        { id: 'ALL', label: 'Xem tất cả' },
+        { id: 'MINE', label: 'Của tôi' },
+        { id: 'IMPORTANT', label: 'Quan trọng' },
+    ];
 
+    return (
+        <View className="h-12 mb-2">
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 4 }}
+            >
+                {tabs.map((tab) => {
+                    const isActive = current === tab.id;
                     return (
                         <TouchableOpacity
-                            key={tab.key}
-                            onPress={() => onChange(tab.key)}
-                            className={`flex-1 flex-row items-center justify-center py-2 px-3 rounded-lg mx-1 ${isActive ? 'bg-blue-600' : 'bg-transparent'
+                            key={tab.id}
+                            onPress={() => onChange(tab.id)}
+                            className={`mr-3 px-5 py-2 rounded-full border ${isActive
+                                ? 'bg-slate-800 border-slate-800'
+                                : 'bg-white border-slate-200'
                                 }`}
                         >
-                            <DynamicIcon
-                                name={tab.icon}
-                                size={16}
-                                color={isActive ? '#FFF' : '#64748b'}
-                            />
-                            <Text className={`text-sm font-medium ml-2 ${isActive ? 'text-white' : 'text-slate-600'
+                            <Text className={`text-xs font-bold ${isActive ? 'text-white' : 'text-slate-600'
                                 }`}>
                                 {tab.label}
                             </Text>
                         </TouchableOpacity>
                     );
                 })}
-            </View>
+            </ScrollView>
         </View>
     );
 };

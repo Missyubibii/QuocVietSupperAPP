@@ -1,220 +1,169 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    KeyboardAvoidingView,
-    ScrollView,
-    Platform,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
-import { CreateTaskSchema, CreateTaskPayload } from '../task.types';
+import { DynamicIcon } from '../../../components/ui/DynamicIcon';
+import { CreateTaskSchema, CreateTaskPayload, TaskPriorityType } from '../task.types';
 import { useTaskStore } from '../store';
+import { useNotificationStore } from '../../notification/store'; // Gọi thông báo
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function CreateTaskScreen() {
     const router = useRouter();
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { createTaskOptimistic, clearError } = useTaskStore();
+    const { addTask } = useTaskStore();
+    const { addNotification } = useNotificationStore();
+    const [loading, setLoading] = useState(false);
 
-    const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<CreateTaskPayload>({
+    // Date Picker State
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const { control, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateTaskPayload>({
         resolver: zodResolver(CreateTaskSchema),
         defaultValues: {
             title: '',
             description: '',
             priority: 'MEDIUM',
-            assignee_id: 1001,
-            due_date: new Date().toISOString(), // Default to today (ISO string)
-        },
+            assignee_id: 1, // Mặc định ID user hiện tại
+            due_date: new Date().toISOString(),
+        }
     });
 
-    const onSubmit = async (data: CreateTaskPayload) => {
-        setIsSubmitting(true);
-        clearError();
+    const selectedDate = watch('due_date');
+    const selectedPriority = watch('priority');
 
+    const onSubmit = async (data: CreateTaskPayload) => {
+        setLoading(true);
         try {
-            // Ensure date is ISO string
-            const payload = {
-                ...data,
-                due_date: new Date(data.due_date).toISOString(),
+            // 1. Tạo đối tượng Task hoàn chỉnh
+            const newTask = {
+                id: Math.random().toString(36).substr(2, 9), // Tạo ID String
+                title: data.title,
+                description: data.description || "",
+                status: "TODO", // Mặc định là TODO
+                priority: data.priority,
+                assignee_id: data.assignee_id,
+                assignee_name: "Tôi", // Hardcode tạm
+                assignee_avatar: "https://ui-avatars.com/api/?name=Toi",
+                due_date: data.due_date,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
 
-            await createTaskOptimistic(payload);
+            // 2. Thêm vào Store
+            // @ts-ignore (Bỏ qua lỗi check type ngặt nghèo tạm thời nếu có)
+            addTask(newTask);
 
-            Alert.alert('Thành công', 'Công việc đã được tạo!', [
-                { text: 'OK', onPress: () => router.back() }
-            ]);
-        } catch (error: any) {
-            // Show error (task already rolled back in store)
-            Alert.alert(
-                'Không thể tạo công việc',
-                error.message || 'Vui lòng thử lại sau',
-                [
-                    { text: 'Hủy', style: 'cancel' },
-                    {
-                        text: 'Thử lại',
-                        onPress: () => handleSubmit(onSubmit)(), // Retry
-                    },
-                ]
-            );
+            // 3. Thông báo thành công
+            addNotification("Thành công", `Đã tạo công việc: ${data.title}`, "SUCCESS");
+
+            // 4. Đóng modal
+            router.back();
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Lỗi', 'Không thể tạo công việc. Vui lòng kiểm tra lại.');
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
-    const currentDueDate = watch('due_date');
+    const PriorityButton = ({ value, label, color }: { value: TaskPriorityType, label: string, color: string }) => (
+        <TouchableOpacity
+            onPress={() => setValue('priority', value)}
+            className={`flex-1 py-3 rounded-xl border items-center justify-center mr-2 ${selectedPriority === value ? `bg-${color}-50 border-${color}-500` : 'bg-white border-gray-200'}`}
+        >
+            <Text className={`font-bold ${selectedPriority === value ? `text-${color}-600` : 'text-gray-500'}`}>{label}</Text>
+        </TouchableOpacity>
+    );
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1 bg-white"
-        >
-            <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ padding: 24 }}
-                keyboardShouldPersistTaps="handled"
-            >
-                {/* Title Input */}
-                <Controller
-                    control={control}
-                    name="title"
-                    render={({ field: { onChange, value } }) => (
-                        <View className="mb-4">
-                            <Text className="text-sm font-semibold text-slate-700 mb-2">
-                                Tiêu đề <Text className="text-red-500">*</Text>
-                            </Text>
+        <SafeAreaView className="flex-1 bg-white" edges={['bottom']}>
+            {/* Header Modal */}
+            <View className="px-5 py-4 border-b border-gray-100 flex-row justify-between items-center">
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Text className="text-gray-500 text-base">Hủy</Text>
+                </TouchableOpacity>
+                <Text className="text-lg font-bold text-gray-900">Công việc mới</Text>
+                <TouchableOpacity onPress={handleSubmit(onSubmit)} disabled={loading}>
+                    <Text className={`text-base font-bold ${loading ? 'text-gray-300' : 'text-blue-600'}`}>Lưu</Text>
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView className="flex-1 px-5 pt-6">
+                {/* Title */}
+                <View className="mb-6">
+                    <Text className="text-sm font-bold text-gray-700 mb-2">Tên công việc <Text className="text-red-500">*</Text></Text>
+                    <Controller
+                        control={control}
+                        name="title"
+                        render={({ field: { onChange, value } }) => (
                             <TextInput
-                                className="border border-slate-300 rounded-lg px-4 py-3 text-base"
-                                placeholder="Nhập tiêu đề công việc"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900 text-base"
+                                placeholder="Ví dụ: Làm báo cáo tháng..."
                                 value={value}
                                 onChangeText={onChange}
-                                editable={!isSubmitting}
                             />
-                            {errors.title && (
-                                <Text className="text-red-500 text-sm mt-1">
-                                    {errors.title.message}
-                                </Text>
-                            )}
-                        </View>
-                    )}
-                />
+                        )}
+                    />
+                    {errors.title && <Text className="text-red-500 text-xs mt-1">{errors.title.message}</Text>}
+                </View>
 
-                {/* Description Input */}
-                <Controller
-                    control={control}
-                    name="description"
-                    render={({ field: { onChange, value } }) => (
-                        <View className="mb-4">
-                            <Text className="text-sm font-semibold text-slate-700 mb-2">
-                                Mô tả
-                            </Text>
+                {/* Description */}
+                <View className="mb-6">
+                    <Text className="text-sm font-bold text-gray-700 mb-2">Mô tả chi tiết</Text>
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field: { onChange, value } }) => (
                             <TextInput
-                                className="border border-slate-300 rounded-lg px-4 py-3 text-base"
-                                placeholder="Nhập mô tả (tùy chọn)"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900 text-base h-32"
+                                placeholder="Nhập mô tả..."
                                 value={value}
                                 onChangeText={onChange}
                                 multiline
-                                numberOfLines={4}
                                 textAlignVertical="top"
-                                editable={!isSubmitting}
                             />
-                        </View>
-                    )}
-                />
-
-                {/* Priority Picker */}
-                <Controller
-                    control={control}
-                    name="priority"
-                    render={({ field: { onChange, value } }) => (
-                        <View className="mb-4">
-                            <Text className="text-sm font-semibold text-slate-700 mb-2">
-                                Mức độ ưu tiên
-                            </Text>
-                            <View className="border border-slate-300 rounded-lg overflow-hidden">
-                                <Picker
-                                    selectedValue={value}
-                                    onValueChange={onChange}
-                                    enabled={!isSubmitting}
-                                >
-                                    <Picker.Item label="Cao" value="HIGH" />
-                                    <Picker.Item label="Trung bình" value="MEDIUM" />
-                                    <Picker.Item label="Thấp" value="LOW" />
-                                </Picker>
-                            </View>
-                        </View>
-                    )}
-                />
-
-                {/* Due Date Picker */}
-                <Controller
-                    control={control}
-                    name="due_date"
-                    render={({ field: { onChange, value } }) => (
-                        <View className="mb-6">
-                            <Text className="text-sm font-semibold text-slate-700 mb-2">
-                                Hạn chót <Text className="text-red-500">*</Text>
-                            </Text>
-                            <TouchableOpacity
-                                onPress={() => setShowDatePicker(true)}
-                                className="border border-slate-300 rounded-lg px-4 py-3"
-                                disabled={isSubmitting}
-                            >
-                                <Text className="text-base text-slate-800">
-                                    {new Date(value).toLocaleDateString('vi-VN')}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {showDatePicker && (
-                                <DateTimePicker
-                                    value={new Date(value)}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(event, selectedDate) => {
-                                        setShowDatePicker(false);
-                                        if (selectedDate) {
-                                            onChange(selectedDate.toISOString()); // Convert to ISO string
-                                        }
-                                    }}
-                                    minimumDate={new Date()} // Can't select past dates
-                                />
-                            )}
-
-                            {errors.due_date && (
-                                <Text className="text-red-500 text-sm mt-1">
-                                    {errors.due_date.message}
-                                </Text>
-                            )}
-                        </View>
-                    )}
-                />
-
-                {/* Submit Button */}
-                <TouchableOpacity
-                    onPress={handleSubmit(onSubmit)}
-                    disabled={isSubmitting}
-                    className={`bg-blue-600 py-4 rounded-xl ${isSubmitting ? 'opacity-50' : ''}`}
-                >
-                    <View className="flex-row items-center justify-center">
-                        {isSubmitting && (
-                            <ActivityIndicator size="small" color="#FFF" className="mr-2" />
                         )}
-                        <Text className="text-white font-bold text-lg">
-                            {isSubmitting ? 'Đang tạo...' : 'Tạo công việc'}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                    />
+                </View>
 
-                {/* Extra spacing for keyboard */}
-                <View className="h-8" />
+                {/* Priority */}
+                <View className="mb-6">
+                    <Text className="text-sm font-bold text-gray-700 mb-2">Mức độ ưu tiên</Text>
+                    <View className="flex-row">
+                        <PriorityButton value="HIGH" label="Cao" color="red" />
+                        <PriorityButton value="MEDIUM" label="TB" color="orange" />
+                        <PriorityButton value="LOW" label="Thấp" color="blue" />
+                    </View>
+                </View>
+
+                {/* Due Date */}
+                <View className="mb-6">
+                    <Text className="text-sm font-bold text-gray-700 mb-2">Hạn hoàn thành</Text>
+                    <TouchableOpacity
+                        onPress={() => setShowDatePicker(true)}
+                        className="flex-row items-center bg-gray-50 border border-gray-200 rounded-xl p-4"
+                    >
+                        <DynamicIcon name="calendar" size={20} color="#6B7280" />
+                        <Text className="ml-3 text-gray-900 font-medium">
+                            {new Date(selectedDate).toLocaleDateString('vi-VN')}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={new Date(selectedDate)}
+                            mode="date"
+                            display="default"
+                            onChange={(event, date) => {
+                                setShowDatePicker(false);
+                                if (date) setValue('due_date', date.toISOString());
+                            }}
+                        />
+                    )}
+                </View>
             </ScrollView>
-        </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }

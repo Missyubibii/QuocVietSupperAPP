@@ -2,10 +2,10 @@ import { z } from "zod";
 
 /**
  * Task Management Type Definitions
- * Chapter 4: High-Performance CRUD with Optimistic UI
+ * Standardized: ID is STRING
  */
 
-// Enums
+// 1. Runtime Constants (Dùng để so sánh giá trị)
 export const TaskStatus = {
   TODO: "TODO",
   IN_PROGRESS: "IN_PROGRESS",
@@ -18,12 +18,12 @@ export const TaskPriority = {
   LOW: "LOW",
 } as const;
 
-// Type definitions
+// 2. Type Definitions (Dùng để định nghĩa kiểu)
 export type TaskStatusType = (typeof TaskStatus)[keyof typeof TaskStatus];
 export type TaskPriorityType = (typeof TaskPriority)[keyof typeof TaskPriority];
 
 export interface Task {
-  id: number;
+  id: string; // 🔴 QUAN TRỌNG: Đã sửa thành STRING
   title: string;
   description?: string;
   status: TaskStatusType;
@@ -31,12 +31,12 @@ export interface Task {
   assignee_id: number;
   assignee_name: string;
   assignee_avatar?: string;
-  due_date: string; // ISO 8601 string
+  due_date: string; // ISO 8601
   created_at: string;
   updated_at: string;
 }
 
-// Zod Schemas
+// 3. Zod Schemas
 export const PrioritySchema = z.enum(["HIGH", "MEDIUM", "LOW"]);
 export const StatusSchema = z.enum(["TODO", "IN_PROGRESS", "DONE"]);
 
@@ -60,18 +60,16 @@ export const CreateTaskSchema = z.object({
 export type CreateTaskPayload = z.infer<typeof CreateTaskSchema>;
 
 export const UpdateStatusSchema = z.object({
-  id: z.number(),
+  id: z.string(), // 🔴 Sửa thành string
   status: StatusSchema,
 });
 
 export type UpdateStatusPayload = z.infer<typeof UpdateStatusSchema>;
 
-export type TaskFilter = "ALL" | "MY_TASKS" | "IMPORTANT";
-
-// Repository interface
+// Interface cho Repository
 export interface ITaskRepository {
-  getTasks(filter?: TaskFilter): Promise<Task[]>;
+  getTasks(filter?: any): Promise<Task[]>;
   createTask(payload: CreateTaskPayload): Promise<Task>;
-  updateStatus(id: number, status: TaskStatusType): Promise<Task>;
-  deleteTask(id: number): Promise<void>;
+  updateStatus(id: string, status: TaskStatusType): Promise<Task>; // id string
+  deleteTask(id: string): Promise<void>; // id string
 }

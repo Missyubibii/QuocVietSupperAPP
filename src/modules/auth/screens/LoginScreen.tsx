@@ -8,19 +8,19 @@ import { GlassCard } from '../../../components/ui/GlassCard';
 import { DynamicIcon } from '../../../components/ui/DynamicIcon';
 import { useAuthStore } from '../store';
 import { LoginSchema, type LoginFormData } from '../auth.types';
+import { useNotificationStore } from '../../notification/store';
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const { login } = useAuthStore();
+  const { addNotification } = useNotificationStore();
   const router = useRouter();
-
   const { control, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: { username: '', password: '' },
   });
 
-  // Check biometric hardware AND user preference on mount
   useEffect(() => {
     (async () => {
       try {
@@ -28,7 +28,6 @@ export default function LoginScreen() {
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
         setBiometricAvailable(hasHardware && isEnrolled);
 
-        // Load user's biometric preference from storage
         const { loadBiometricPreference } = useAuthStore.getState();
         await loadBiometricPreference();
       } catch (error) {
@@ -43,11 +42,14 @@ export default function LoginScreen() {
     try {
       await login(data.username, data.password);
 
-      // BIOMETRIC OPT-IN UX FLOW (System Design Doc Chapter 2.3)
-      // After first successful login, ask user if they want to enable biometric
+      addNotification(
+        'Đăng nhập thành công',
+        `Chào mừng ${data.username} quay trở lại!`,
+        'SUCCESS'
+      );
+
       if (biometricAvailable) {
         const { enableBiometric } = useAuthStore.getState();
-
         Alert.alert(
           'Đăng nhập nhanh',
           'Bạn có muốn bật đăng nhập bằng vân tay/FaceID cho lần sau không?',
@@ -70,53 +72,63 @@ export default function LoginScreen() {
           ]
         );
       } else {
-        router.replace('/'); // No biometric available, just navigate
+        router.replace('/');
       }
     } catch (error) {
       const errorMessage = (error as Error).message;
       if (errorMessage.includes('401')) {
-        Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
+        Alert.alert('Đăng nhập thất bại', 'Sai tên đăng nhập hoặc mật khẩu.');
       } else {
-        Alert.alert('Login Failed', errorMessage || 'An error occurred');
+        Alert.alert('Lỗi hệ thống', errorMessage || 'Vui lòng thử lại sau.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // FIXED: No TODO - Complete biometric login logic with mock credentials
   const handleBiometricLogin = async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Đăng nhập bằng sinh trắc học',
-        fallbackLabel: 'Use password',
+        fallbackLabel: 'Sử dụng mật khẩu',
       });
 
       if (result.success) {
         setLoading(true);
         try {
-          // Mock login with saved credentials (Mock-First strategy)
           await login('test_user', '123456');
+
+          addNotification(
+            'Xác thực thành công',
+            'Đăng nhập nhanh bằng vân tay/FaceID',
+            'SUCCESS'
+          );
+
           router.replace('/');
         } catch (error) {
-          Alert.alert('Error', 'Biometric authentication failed');
+          Alert.alert('Lỗi', 'Xác thực sinh trắc học thất bại');
         } finally {
           setLoading(false);
         }
       }
     } catch (error) {
       console.error('[Biometric] Authentication error:', error);
-      Alert.alert('Error', 'Biometric authentication not available');
+      Alert.alert('Lỗi', 'Thiết bị không hỗ trợ hoặc chưa cài đặt');
     }
   };
 
-  // ADDED: Mock Biometric button for Antigravity testing (Dev Only)
   const handleMockBiometricLogin = async () => {
     setLoading(true);
     try {
-      // Simulate biometric authentication
       await new Promise((resolve) => setTimeout(resolve, 500));
       await login('test_user', '123456');
+
+      addNotification(
+        'Mock Login',
+        'Đăng nhập giả lập thành công (Dev Mode)',
+        'WARNING'
+      );
+
       router.replace('/');
     } catch (error) {
       Alert.alert('Error', 'Mock biometric login failed');
@@ -136,14 +148,12 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <GlassCard className="p-8">
-          {/* Logo/Title */}
           <View className="items-center mb-8">
             <DynamicIcon name="lock" size={64} color="#8B5CF6" />
             <Text className="text-2xl font-bold text-purple-700 mt-4">QUỐC VIỆT SUPER APP</Text>
             <Text className="text-gray-600 mt-1">Đăng nhập để tiếp tục</Text>
           </View>
 
-          {/* Username Input */}
           <Controller
             control={control}
             name="username"
@@ -168,7 +178,6 @@ export default function LoginScreen() {
             )}
           />
 
-          {/* Password Input */}
           <Controller
             control={control}
             name="password"
@@ -193,7 +202,6 @@ export default function LoginScreen() {
             )}
           />
 
-          {/* Login Button */}
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
             disabled={loading}
@@ -204,9 +212,6 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Biometric Button - Only shows when:
-              1. Hardware is available (hasHardware && isEnrolled)
-              2. User has opted in (isBiometricEnabled from store) */}
           {biometricAvailable && useAuthStore.getState().isBiometricEnabled && (
             <TouchableOpacity
               onPress={handleBiometricLogin}
@@ -220,7 +225,6 @@ export default function LoginScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Mock Biometric Button (Dev Only - For Antigravity testing) */}
           {__DEV__ && !biometricAvailable && (
             <TouchableOpacity
               onPress={handleMockBiometricLogin}
@@ -235,7 +239,6 @@ export default function LoginScreen() {
           )}
         </GlassCard>
 
-        {/* Mock Credentials Hint (Dev Only) */}
         {__DEV__ && (
           <View className="mt-6 px-4">
             <Text className="text-center text-sm text-gray-700 bg-yellow-100 p-3 rounded-lg">

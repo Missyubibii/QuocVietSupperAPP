@@ -25,7 +25,7 @@
             "autoIncrement": true,
             "env": {
                 "EXPO_PUBLIC_USE_MOCK": "false",
-                "GRADLE_OPTS": "-Dorg.gradle.daemon=false"
+                "GRADLE_OPTS": "-Dorg.gradle.daemon=false -Xmx4g -XX:MaxMetaspaceSize=1g"
             },
             "ios": {
                 "distribution": "store"

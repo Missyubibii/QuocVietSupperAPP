@@ -8,20 +8,29 @@ import { formatDate, isOverdue } from '../utils/dateHelpers';
 interface TaskItemProps {
     task: Task;
     onPress: (task: Task) => void;
+    onLongPress?: (task: Task) => void; // 1. Thêm prop onLongPress
+    isSelected?: boolean; // 2. Thêm prop isSelected
 }
 
 export const TaskItem = React.memo<TaskItemProps>(
-    ({ task, onPress }) => {
+    ({ task, onPress, onLongPress, isSelected }) => {
         const overdueStatus = isOverdue(task.due_date, task.status);
 
         return (
             <Pressable
                 onPress={() => onPress(task)}
-                className="bg-white p-4 mb-2 mx-4 rounded-xl border border-slate-200 active:opacity-70"
+                onLongPress={() => onLongPress && onLongPress(task)} // 3. Gắn sự kiện
+                delayLongPress={300}
+                className={`p-4 mb-2 mx-4 rounded-xl border active:opacity-70 ${
+                    // 4. Đổi màu nền khi được chọn
+                    isSelected
+                        ? 'bg-blue-50 border-blue-500'
+                        : 'bg-white border-slate-200'
+                    }`}
             >
                 {/* Header: Title + Priority Badge */}
                 <View className="flex-row items-start justify-between mb-2">
-                    <Text className="text-base font-bold text-slate-800 flex-1 pr-2" numberOfLines={2}>
+                    <Text className={`text-base font-bold flex-1 pr-2 ${isSelected ? 'text-blue-900' : 'text-slate-800'}`} numberOfLines={2}>
                         {task.title}
                     </Text>
                     <PriorityBadge priority={task.priority} />
@@ -70,15 +79,6 @@ export const TaskItem = React.memo<TaskItemProps>(
                     <StatusBadge status={task.status} />
                 </View>
             </Pressable>
-        );
-    },
-    (prevProps, nextProps) => {
-        // Custom comparison for optimal performance
-        return (
-            prevProps.task.id === nextProps.task.id &&
-            prevProps.task.status === nextProps.task.status &&
-            prevProps.task.updated_at === nextProps.task.updated_at &&
-            prevProps.task.title === nextProps.task.title
         );
     }
 );
